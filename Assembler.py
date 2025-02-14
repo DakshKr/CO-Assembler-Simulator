@@ -36,5 +36,39 @@ def check_input():
         sys.exit( "\nInput & Output File Can't be same\n\n" )
 
 
+# def read_assembly_code(file_path):
+#                            #reads assemby code line by line and extracts opcode and operands
+#     instructions = []
+#     labels = {}
+#     current_line = 0;
+
+#     with open(file_path, "r") as f:
+#         for line in f:
+#             line = line.strip()
+#             if(line.startwith("#")):
+#                 continue
+#             if ":" in line: #label identification
+#                 label = line.split(":")[0].strip()
+#                 labels[label] = current_line
+#             else:
+#                 instructions.append(line)
+#                 current_line+=1
+
+#         read_instructions = []
+
+#         for line in instructions:
+#             parts = re.split(r"[,\s()]+", line)               #refines line to opcode & operand
+#             new_parts = []
+#             for part in parts:
+#                 if part:
+#                     new_parts.append(part)
+#                 else:
+#                     continue
+
+#         if new_parts[0] not in                  #opcode.json       (how to access opcode.json from here)
+
+
+
+
 if __name__ == "__main__":
     main()
