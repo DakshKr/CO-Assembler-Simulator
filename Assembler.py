@@ -94,8 +94,7 @@ def convert_to_binary( code, labels ):
         else:
             line_of_code = line
         
-        elements = re.split(r'[ ,()]+', line_of_code)
-
+        elements = [i for i in re.split(r'[ ,()]+', line_of_code) if i!='']
         instruction = elements[0]
         instruction_data = opcodes_dict.get(instruction)
 
@@ -105,14 +104,13 @@ def convert_to_binary( code, labels ):
         match instruction_data["type"]:
 
             case "R":
-                binary_line = get_R_type_binary(elements, opcodes_dict, registers_dict)
-                binary_list.append(binary_line)
+                binary_line = get_R_type_binary(elements, opcodes_dict, registers_dict, line_number)
             
             case "I":
-                binary_line = get_I_type_binary()
-            
+                binary_line = get_I_type_binary(elements, opcodes_dict, registers_dict, line_number)
+
             case "S":
-                binary_line = get_S_type_binary()
+                binary_line = get_S_type_binary(elements, opcodes_dict, registers_dict, line_number)
 
             case "B":
                 binary_line = get_B_type_binary()
@@ -122,31 +120,88 @@ def convert_to_binary( code, labels ):
             
             case _:
                 binary_line = get_special_type_binary()
-            
- 
-def get_R_type_binary(elements, opcodes_dict, registers_dict):
+        
+        if binary_line: binary_list.append(binary_line)
+        print(binary_line)
+
+
+def get_R_type_binary(elements, opcodes_dict, registers_dict, line_number):
     
     # assigning and checking whether all the operands and opcode are present
     try:
         instruction, rd, rs1, rs2 = elements
     except ValueError:
-        sys.exit("Error: R-type instruction must have exactly 4 elements: instruction, rd, rs1, rs2")
+        sys.exit(f"Error at line {line_number}: R-type instruction must have exactly 4 elements: instruction, rd, rs1, rs2")
 
     # checking whether the registers are valid
     for reg in (rd, rs1, rs2):
         if reg not in registers_dict: 
-            sys.exit(f"Error: Invalid register format '{reg}'.")
+            sys.exit(f"Error: Invalid register format '{reg}' at line {line_number}.")
 
     instruction_data = opcodes_dict.get(instruction)
-
+  
     return f'{instruction_data["funct7"]} {registers_dict.get(rs2)} {registers_dict.get(rs1)} {instruction_data["funct3"]} {registers_dict.get(rd)} {instruction_data["opcode"]}'
 
 
-def get_I_type_binary(elements, opcodes_dict, registers_dict):
-    ...
+def get_I_type_binary(elements, opcodes_dict, registers_dict, line_number):
+    
+    try:
+        instruction, rd, rs1, imm = elements
+        if rs1[1:].isdigit() and (rs1[0] == '-' or rs1[0].isdigit()):
+            temp = rs1
+            rs1 = imm
+            imm = temp
+    except ValueError:
+        sys.exit("Error: I-type instruction must have exactly 4 elements: instruction, rd, rs1, imm")
 
-def get_S_type_binary():
-    ...
+    
+
+    if not imm[1:].isdigit() and (imm[0] == '-' or imm[0].isdigit()):
+        sys.exit(f"Error: Immediate value '{imm}' is not a valid number at line {line_number}.")
+
+    if not (-2048 <= int(imm) <= 2047): 
+        sys.exit(f"Error: Immediate value '{imm}' out of range (-2048 to 2047) at line {line_number}.")
+
+    if rs1 not in registers_dict or rd not in registers_dict:
+        sys.exit(f"Error: Invalid register format '{rs1}' or '{rd}' at line {line_number}.")
+
+    imm = f"{int(imm) & 0b111111111111:012b}"
+    instruction_data = opcodes_dict.get(instruction)
+
+    return f'{imm} {registers_dict.get(rs1)} {instruction_data["funct3"]} {registers_dict.get(rd)} {instruction_data["opcode"]}'
+
+
+def get_S_type_binary(elements, opcodes_dict, registers_dict, line_number):
+
+    # Ensure correct format
+    try:
+        instruction, rs2, rs1, offset = elements 
+        if not rs1[1:].isdigit() and (rs1[0] == '-' or rs1[0].isdigit()):
+            temp = rs1
+            rs1 = offset
+            offset = temp
+    except ValueError:
+        sys.exit(f"Error at {line_number}: S-type instruction must have exactly 4 elements: instruction, rs2, offset, rs1")
+
+    if rs1 not in registers_dict or rs2 not in registers_dict:
+        sys.exit(f"Error: Invalid register format '{rs1}' or '{rs2}' at line {line_number}.")
+
+    # Validate immediate (offset)
+    try:
+        imm = int(offset)
+        if not (-2048 <= imm <= 2047): 
+            sys.exit(f"Error: Immediate value '{imm}' out of range (-2048 to 2047) at line {line_number}.")
+    except ValueError:
+        sys.exit(f"Error: Immediate value '{offset}' is not a valid number at line {line_number}.")
+
+    instruction_data = opcodes_dict.get(instruction)
+    imm_bin = f"{int(imm) & 0b111111111111:012b}"  
+    imm_upper = imm_bin[:7] 
+    imm_lower = imm_bin[7:]  
+
+    return f'{imm_upper} {registers_dict[rs2]} {registers_dict[rs1]} {instruction_data["funct3"]} {imm_lower} {instruction_data["opcode"]}'
+
+
 def get_B_type_binary():
     ...
 def get_J_type_binary():
