@@ -76,6 +76,9 @@ def convert_to_binary( code, labels ):
     with open("opcodes.json", "r") as f1:
         opcodes_dict = json.load(f1)
 
+    with open("registers.json", "r") as f2:
+        registers_dict = json.load(f2)
+
     binary_list = []
     line_number = 0
     pc = 0
@@ -92,6 +95,7 @@ def convert_to_binary( code, labels ):
             line_of_code = line
         
         elements = re.split(r'[ ,()]+', line_of_code)
+
         instruction = elements[0]
         instruction_data = opcodes_dict.get(instruction)
 
@@ -101,7 +105,8 @@ def convert_to_binary( code, labels ):
         match instruction_data["type"]:
 
             case "R":
-                binary_line = get_R_type_binary()
+                binary_line = get_R_type_binary(elements, opcodes_dict, registers_dict)
+                binary_list.append(binary_line)
             
             case "I":
                 binary_line = get_I_type_binary()
@@ -116,14 +121,39 @@ def convert_to_binary( code, labels ):
                 binary_line = get_J_type_binary()
             
             case _:
-                binary_line = get_special_
+                binary_line = get_special_type_binary()
             
-
-            
+ 
+def get_R_type_binary(elements, opcodes_dict, registers_dict):
     
+    # assigning and checking whether all the operands and opcode are present
+    try:
+        instruction, rd, rs1, rs2 = elements
+    except ValueError:
+        sys.exit("Error: R-type instruction must have exactly 4 elements: instruction, rd, rs1, rs2")
 
-    
+    # checking whether the registers are valid
+    for reg in (rd, rs1, rs2):
+        if reg not in registers_dict: 
+            sys.exit(f"Error: Invalid register format '{reg}'.")
+
+    instruction_data = opcodes_dict.get(instruction)
+
+    return f'{instruction_data["funct7"]} {registers_dict.get(rs2)} {registers_dict.get(rs1)} {instruction_data["funct3"]} {registers_dict.get(rd)} {instruction_data["opcode"]}'
+
+
+def get_I_type_binary(elements, opcodes_dict, registers_dict):
     ...
+
+def get_S_type_binary():
+    ...
+def get_B_type_binary():
+    ...
+def get_J_type_binary():
+    ...
+def get_special_type_binary():
+    ...
+
 
 
 if __name__ == "__main__":
