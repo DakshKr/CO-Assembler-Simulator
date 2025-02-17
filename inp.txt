@@ -1,0 +1,40 @@
+# Complex Test Case for RISC-V Assembler
+
+# Initialize the stack pointer
+addi sp, zero, 380
+
+# Set up data memory address (using LUI and ADDI)
+lui s0, 65536
+addi s0, s0, 65536
+
+# Load a number to be evaluated
+addi s2, zero, 21
+
+# Label with an instruction on the same line
+start: addi s3, zero, 1
+
+# Compute XOR and then copy result into s1
+xor t0, s2, s3
+add s1, zero, t0
+
+# Branch: if s1 equals s2, jump to branch_target (forward reference)
+beq s1, s2, branch_target
+
+# If branch not taken, execute this instruction
+addi a0, s1, 5
+
+# Branch target label on its own line
+branch_target:
+    jal ra, subroutine_call
+
+# Virtual Halt instruction (must be the last instruction of main)
+beq zero, zero, 0x00000000
+
+# Subroutine definition (called via jal)
+subroutine_call:
+    addi sp, sp, -8       # Decrement stack pointer before saving
+    sw ra, 4(sp)          # Save return address
+    sw s1, 0(s0)          # Store result in data memory
+    lw ra, 4(sp)          # Load return address back
+    addi sp, sp, 8        # Restore stack pointer
+    jalr zero, 0(ra)      # Return from subroutine
