@@ -97,7 +97,7 @@ def convert_to_binary( code, labels ):
 
         if instruction not in opcodes_dict:
             sys.exit(f"Error: Unknown instruction '{instruction}' at line {line_number}" )
-        
+
         match instruction_data["type"]:
 
             case "R":
