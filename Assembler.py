@@ -239,14 +239,14 @@ def get_B_type_binary(elements, instruction_data, registers_dict, line_number, l
 
     offset = get_offset_from_label(offset, label_dict, line_number, pc)
     
+    if offset<0: offset+=1
     if not (-4096 <= offset <= 4095):
         sys.exit(f"Error at line {line_number}: Computed offset '{offset}' out of range for branch instruction.")
 
-    offset = offset//2
     # Convert the offset to a 12-bit two's complement binary string.
-    imm_bin = f"{int(offset) & 0b111111111111:012b}"
-    
-    return f"{imm_bin[0]}{imm_bin[1:7]}{registers_dict[rs1]}{registers_dict[rs1]}{instruction_data['funct3']}{imm_bin[7:11]}{imm_bin[11]}{instruction_data['opcode']}"
+    imm_bin = f"{int(offset) & 0xFFF:012b}"
+
+    return f"{imm_bin[0]}{imm_bin[1:7]}{registers_dict[rs1]}{registers_dict[rs2]}{instruction_data['funct3']}{imm_bin[7:]}{instruction_data['opcode']}"
 
  
 def get_J_type_binary(elements, instruction_data, registers_dict, line_number, label_dict, pc):

@@ -1,23 +1,11 @@
-addi t0,zero,1
-addi s0,s0,1
-beq s0,s1,label1
-label4e:beq zero,zero,0
-label4d: addi t0,zero,2
-label1: bne s0,s1,8
-addi t0,zero,3
-addi s1,s1,1
-bne s0,s1,label4e
-addi s1,s1,1
-label4c: blt s1,s0,8
-addi t0,zero,4
-blt s0,s1,label4d
-label2: addi s0,s0,1
-label4b: bge s0,s1,8
-addi t0,zero,5
-addi s1,s1,1
-addi s1,s1,1
-bge s1,s0,label4c
-addi t0,zero,6
-label4a: bltu s0,s1,8
-addi t0,zero,7
+addi s0,s0,4
+add s1,zero,zero
+addi s1,zero,1
+add s2,s1,s1
+add s3,s2,s1
+addi s4,zero,-10
+sw s1,0(s0)
+sw s2,4(s0)
+sw s3,-4(s0)
+sw s4,8(s0)
 beq zero,zero,0

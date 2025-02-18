@@ -1,7 +1,7 @@
 def main():
     # Hardcoded file names
     file1 = "out.txt"
-    file2 = "x.txt"
+    file2 = "correct_binary.txt"
 
     try:
         with open(file1, 'r') as f1:
