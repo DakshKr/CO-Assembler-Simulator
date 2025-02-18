@@ -1,35 +1,23 @@
-<<<<<<< HEAD
-    addi a1, a0, 5      # x1 = 5
-    addi a2, a0, 10     # x2 = 10
-    addi a3, a0, 5      # x3 = 5
-
-    beq  a1, a3, LABEL1  # If x1 == x3, jump to LABEL1
-    bne  a1, a2, LABEL2  # If x1 != x2, jump to LABEL2
-    blt  a1,a2, LABEL3  # If x1 < x2, jump to LABEL3
-
-    addi x4, x0, 100     # This instruction is skipped if a branch is taken
-
-LABEL1:
-    addi x5, x0, 50      # x5 = 50
-    j END
-
-LABEL2:
-    addi x6, x0, 75      # x6 = 75
-    j END
-
-LABEL3:
-    addi x7, x0, 125     # x7 = 125
-
-END:
-    nop                  # End of program
-=======
-addi sp,zero,256
-addi ra,zero,15
-addi sp,zero,10
-loop: beq ra,sp,end
-sub ra,ra,sp
-jal zero,loop
-end: sw ra,0(sp)
-jalr zero,ra,0
+addi t0,zero,1
+addi s0,s0,1
+beq s0,s1,label1
+label4e:beq zero,zero,0
+label4d: addi t0,zero,2
+label1: bne s0,s1,8
+addi t0,zero,3
+addi s1,s1,1
+bne s0,s1,label4e
+addi s1,s1,1
+label4c: blt s1,s0,8
+addi t0,zero,4
+blt s0,s1,label4d
+label2: addi s0,s0,1
+label4b: bge s0,s1,8
+addi t0,zero,5
+addi s1,s1,1
+addi s1,s1,1
+bge s1,s0,label4c
+addi t0,zero,6
+label4a: bltu s0,s1,8
+addi t0,zero,7
 beq zero,zero,0
->>>>>>> 29b43bd (Developed get_ j_type_binary function)

@@ -15,6 +15,9 @@
     "beq":  { "type": "B", "opcode": "1100011", "funct3": "000" },
     "bne":  { "type": "B", "opcode": "1100011", "funct3": "001" },
     "blt":  { "type": "B", "opcode": "1100011", "funct3": "100" },
+    "bge":  { "type": "B", "opcode": "1100011", "funct3": "101" },
+    "bltu":  { "type": "B", "opcode": "1100011", "funct3": "110" },
+   
 
     "jal":  { "type": "J", "opcode": "1101111" },
     

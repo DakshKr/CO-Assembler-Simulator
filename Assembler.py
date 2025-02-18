@@ -20,6 +20,7 @@ def main():
     with open(sys.argv[2], "w") as file:
         for binary_line in binary_code_list:
             file.write(binary_line)
+            file.write("\n")
 
     print("SUCCESS")
 
@@ -133,6 +134,8 @@ def convert_to_binary( code, labels ):
 
         if binary_line: binary_list.append(binary_line)
         pc += 4
+    
+    return binary_list
         
 # Function to check whether the immidiate value is a valid a valid INTEGER (doesn't check range)
 def is_int(imm):
@@ -239,10 +242,11 @@ def get_B_type_binary(elements, instruction_data, registers_dict, line_number, l
     if not (-4096 <= offset <= 4095):
         sys.exit(f"Error at line {line_number}: Computed offset '{offset}' out of range for branch instruction.")
 
+    offset = offset//2
     # Convert the offset to a 12-bit two's complement binary string.
-    imm_bin = f"{offset & 0xFFF:012b}"
-
-    return f"{imm_bin[0]}{imm_bin[1:7]}{registers_dict[rs2]}{registers_dict[rs1]}{instruction_data['funct3']}{imm_bin[7:11]}{imm_bin[11]}{instruction_data['opcode']}"
+    imm_bin = f"{int(offset) & 0b111111111111:012b}"
+    
+    return f"{imm_bin[0]}{imm_bin[1:7]}{registers_dict[rs1]}{registers_dict[rs1]}{instruction_data['funct3']}{imm_bin[7:11]}{imm_bin[11]}{instruction_data['opcode']}"
 
  
 def get_J_type_binary(elements, instruction_data, registers_dict, line_number, label_dict, pc):
