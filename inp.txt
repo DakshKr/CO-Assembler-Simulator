@@ -1,7 +1,23 @@
-add a0, zero, zero   # a0 = 0 + 0
-add a1, a0, ra       # a1 = a0 + ra
-sub a2, a1, sp       # a2 = a1 - sp
-slt a3, a2, gp       # a3 = (a2 < gp) ? 1 : 0
-srl a4, a3, tp       # a4 = a3 >> tp
-or  a5, a4, t0       # a5 = a4 | t0
-and a6, a5, t1       # a6 = a5 & t1
+    addi a1, a0, 5      # x1 = 5
+    addi a2, a0, 10     # x2 = 10
+    addi a3, a0, 5      # x3 = 5
+
+    beq  a1, a3, LABEL1  # If x1 == x3, jump to LABEL1
+    bne  a1, a2, LABEL2  # If x1 != x2, jump to LABEL2
+    blt  a1,a2, LABEL3  # If x1 < x2, jump to LABEL3
+
+    addi x4, x0, 100     # This instruction is skipped if a branch is taken
+
+LABEL1:
+    addi x5, x0, 50      # x5 = 50
+    j END
+
+LABEL2:
+    addi x6, x0, 75      # x6 = 75
+    j END
+
+LABEL3:
+    addi x7, x0, 125     # x7 = 125
+
+END:
+    nop                  # End of program
