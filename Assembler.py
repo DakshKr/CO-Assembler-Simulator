@@ -33,12 +33,12 @@ def check_input():
         sys.exit( "\nMissing/Exceeding the number of Command Line Arguments\n\n" )
 
     # checks whether the input file name is valid
-    if not re.fullmatch( r"^.+\.txt$", sys.argv[1] ):
-        sys.exit( "\nInvalid Input File Name\n\n" )
+    if not re.fullmatch( r"^[a-zA-Z0-9_/\\.-]+\.txt$", sys.argv[1] ):
+        sys.exit( "\nInvalid Input File Path\n\n" )
 
-    # checks whether the input file name is valid
-    if not re.fullmatch( r"^.+\.txt$", sys.argv[2] ):
-        sys.exit( "\nInvalid Output File Name\n\n" )
+    # checks whether the output file name is valid
+    if not re.fullmatch( r"^[a-zA-Z0-9_/\\.-]+\.txt$", sys.argv[2] ):
+        sys.exit( "\nInvalid Output File Path\n\n" )
 
     # make sures whether the input file exists
     try:
