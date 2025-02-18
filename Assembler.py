@@ -17,11 +17,11 @@ def main():
 
     binary_code_list = convert_to_binary( input_code_list, labels_dict )
 
+    with open(sys.argv[2], "w") as file:
+        for binary_line in binary_code_list:
+            file.write(binary_line)
 
-
-
-
-
+    print("SUCCESS")
 
 
 # fn to check whether the user gave valid CLIs
