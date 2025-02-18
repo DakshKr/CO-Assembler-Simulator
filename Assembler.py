@@ -106,10 +106,6 @@ def convert_to_binary( code, labels ):
         instruction = elements[0]
         instruction_data = opcodes_dict.get(instruction)
 
-        # Exists program if opcode not found
-        if instruction not in opcodes_dict:
-            sys.exit(f"Error: Unknown instruction '{instruction}' at line {line_number}" )
-
         # Checking for instruction type
         match instruction_data["type"]:
 
@@ -123,15 +119,17 @@ def convert_to_binary( code, labels ):
                 binary_line = get_S_type_binary(elements, opcodes_dict, registers_dict, line_number)
 
             case "B":
-                binary_line = get_B_type_binary(elements, opcodes_dict, registers_dict, line_number)
+                binary_line = get_B_type_binary(elements, opcodes_dict, registers_dict, line_number, labels)
 
             case "J":
-                binary_line = get_J_type_binary(elements, opcodes_dict, registers_dict, line_number)
+                binary_line = get_J_type_binary(elements, opcodes_dict, registers_dict, line_number, labels)
+
+            case "SPECIAL":
+                binary_line = get_special_type_binary(elements, opcodes_dict, registers_dict, line_number, labels)
 
             case _:
-                binary_line = get_special_type_binary(elements, opcodes_dict, registers_dict, line_number)
+                sys.exit(f"Error: Unknown instruction '{instruction}' at line {line_number}" )
 
-        
         if binary_line: binary_list.append(binary_line)
         
 # Function to check whether the immidiate value is a valid a valid INTEGER (doesn't check range)
@@ -154,7 +152,7 @@ def get_R_type_binary(elements, opcodes_dict, registers_dict, line_number):
 
     instruction_data = opcodes_dict.get(instruction)
   
-    return f'{instruction_data["funct7"]} {registers_dict.get(rs2)} {registers_dict.get(rs1)} {instruction_data["funct3"]} {registers_dict.get(rd)} {instruction_data["opcode"]}'
+    return f'{instruction_data["funct7"]}{registers_dict.get(rs2)}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
 
 
 def get_I_type_binary(elements, opcodes_dict, registers_dict, line_number):
@@ -184,7 +182,7 @@ def get_I_type_binary(elements, opcodes_dict, registers_dict, line_number):
     imm = f"{int(imm) & 0b111111111111:012b}"
     instruction_data = opcodes_dict.get(instruction)
 
-    return f'{imm} {registers_dict.get(rs1)} {instruction_data["funct3"]} {registers_dict.get(rd)} {instruction_data["opcode"]}'
+    return f'{imm}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
 
 
 def get_S_type_binary(elements, opcodes_dict, registers_dict, line_number):
@@ -216,19 +214,53 @@ def get_S_type_binary(elements, opcodes_dict, registers_dict, line_number):
     imm_upper = imm_bin[:7] 
     imm_lower = imm_bin[7:]  
 
-    return f'{imm_upper} {registers_dict[rs2]} {registers_dict[rs1]} {instruction_data["funct3"]} {imm_lower} {instruction_data["opcode"]}'
+    return f'{imm_upper}{registers_dict[rs2]}{registers_dict[rs1]}{instruction_data["funct3"]}{imm_lower}{instruction_data["opcode"]}'
 
 
-def get_B_type_binary(elements, opcodes_dict, registers_dict, line_number):
+def get_B_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
     ...
 
 
-def get_J_type_binary():
-    ...
-def get_special_type_binary():
+def get_J_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
     ...
 
 
+def get_special_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
+    
+    match elements[0]:
+
+        case "halt":
+            # Virtual Halt: can be implemented as beq zero,zero,0
+            instruction_data = opcodes_dict.get("beq")
+            return f"{"0" * 12}{registers_dict['zero']}{registers_dict['zero']}{instruction_data['funct3']}{"0" * 5}{instruction_data['opcode']}"
+
+        case "rst":
+            instruction_data = opcodes_dict.get(elements[0])
+            return f"00000000000000000{instruction_data["funct3"]}00000{instruction_data["opcode"]}"
+
+        case "mult":
+            instruction_data = opcodes_dict.get(elements[0])
+            try:
+                instruction, rd, rs1, rs2 = elements
+            except ValueError:
+                sys.exit(f"Error at line {line_number}: mult instruction must have exactly 4 elements: instruction, rd, rs1, rs2")
+
+            if rs1 not in registers_dict or rs2 not in registers_dict:
+                sys.exit(f"Error: Invalid register format '{rs1}' or '{rs2}' at line {line_number}.")
+            
+            return f'{instruction_data["funct7"]}{registers_dict.get(rs2)}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
+
+        case "rvrs":
+            instruction_data = opcodes_dict.get(elements[0])
+            try:
+                instruction, rd, rs1 = elements
+            except ValueError:
+                sys.exit(f"Error at line {line_number}: rvrs instruction must have exactly 3 elements: instruction, rd, rs1")
+
+            if rd not in registers_dict or rs1 not in registers_dict:
+                sys.exit(f"Error: Invalid register format '{rd}' or '{rs1}' at line {line_number}.")
+            
+            return f'{instruction_data["funct7"]}{registers_dict.get(rs1)}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
 
 if __name__ == "__main__":
     main()

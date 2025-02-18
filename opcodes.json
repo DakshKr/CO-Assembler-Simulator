@@ -18,7 +18,9 @@
 
     "jal":  { "type": "J", "opcode": "1101111" },
     
-    "mul":  {  },
-    "rst":  {  },
-    "halt": {  }
+    "mul":  { "type": "SPECIAL", "opcode": "1111111", "funct3": "100", "funct7": "1010000" }, 
+    "rst":  { "type": "SPECIAL", "opcode": "1111111", "funct3": "010" }, 
+    "halt": { "type": "SPECIAL"},
+    "rvrs": { "type": "SPECIAL", "opcode": "1111111", "funct3": "111", "funct7": "1010000" }
+
 }
