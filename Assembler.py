@@ -121,10 +121,9 @@ def convert_to_binary( code, labels ):
                 binary_line = get_S_type_binary(elements, instruction_data, registers_dict, line_number)
 
             case "B":
-                binary_line = get_B_type_binary(elements, instruction_data, registers_dict, line_number, labels)
-
+                binary_line = get_B_type_binary(elements, instruction_data, registers_dict, line_number, labels, pc)
             case "J":
-                binary_line = get_J_type_binary(elements, instruction_data, registers_dict, line_number, labels)
+                binary_line = get_J_type_binary(elements, instruction_data, registers_dict, line_number, labels, pc)
 
             case "SPECIAL":
                 binary_line = get_special_type_binary(elements, instruction_data, registers_dict, line_number, labels)
@@ -133,6 +132,7 @@ def convert_to_binary( code, labels ):
                 sys.exit(f"Error: Unknown instruction '{instruction}' at line {line_number}" )
 
         if binary_line: binary_list.append(binary_line)
+        pc += 4
         
 # Function to check whether the immidiate value is a valid a valid INTEGER (doesn't check range)
 def is_int(imm):
@@ -279,11 +279,11 @@ def get_special_type_binary(elements, opcodes_dict, registers_dict, line_number,
         case "halt":
             # Virtual Halt: can be implemented as beq zero,zero,0
             instruction_data = opcodes_dict.get("beq")
-            return f"{"0" * 12}{registers_dict['zero']}{registers_dict['zero']}{instruction_data['funct3']}{"0" * 5}{instruction_data['opcode']}"
+            return f"{'0' * 12}{registers_dict['zero']}{registers_dict['zero']}{instruction_data['funct3']}{'0' * 5}{instruction_data['opcode']}"
 
         case "rst":
             instruction_data = opcodes_dict.get(elements[0])
-            return f"{instruction_data["funct7"]}0000000000{instruction_data["funct3"]}00000{instruction_data["opcode"]}"
+            return f"{instruction_data['funct7']}0000000000{instruction_data['funct3']}00000{instruction_data['opcode']}"
 
         case "mult":
             instruction_data = opcodes_dict.get(elements[0])
