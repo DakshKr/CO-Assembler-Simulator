@@ -105,27 +105,29 @@ def convert_to_binary( code, labels ):
         elements = [i for i in re.split(r'[ ,()]+', line_of_code) if i!='']
         instruction = elements[0]
         instruction_data = opcodes_dict.get(instruction)
+        if instruction_data is None:
+            sys.exit(f"Error at line {line_number}: Unknown instruction '{instruction}'")
 
         # Checking for instruction type
         match instruction_data["type"]:
 
             case "R":
-                binary_line = get_R_type_binary(elements, opcodes_dict, registers_dict, line_number)
+                binary_line = get_R_type_binary(elements, instruction_data, registers_dict, line_number)
             
             case "I":
-                binary_line = get_I_type_binary(elements, opcodes_dict, registers_dict, line_number)
+                binary_line = get_I_type_binary(elements, instruction_data, registers_dict, line_number)
 
             case "S":
-                binary_line = get_S_type_binary(elements, opcodes_dict, registers_dict, line_number)
+                binary_line = get_S_type_binary(elements, instruction_data, registers_dict, line_number)
 
             case "B":
-                binary_line = get_B_type_binary(elements, opcodes_dict, registers_dict, line_number, labels)
+                binary_line = get_B_type_binary(elements, instruction_data, registers_dict, line_number, labels)
 
             case "J":
-                binary_line = get_J_type_binary(elements, opcodes_dict, registers_dict, line_number, labels)
+                binary_line = get_J_type_binary(elements, instruction_data, registers_dict, line_number, labels)
 
             case "SPECIAL":
-                binary_line = get_special_type_binary(elements, opcodes_dict, registers_dict, line_number, labels)
+                binary_line = get_special_type_binary(elements, instruction_data, registers_dict, line_number, labels)
 
             case _:
                 sys.exit(f"Error: Unknown instruction '{instruction}' at line {line_number}" )
@@ -137,7 +139,16 @@ def is_int(imm):
     imm=imm.removeprefix('-')
     return imm.isdigit()
 
-def get_R_type_binary(elements, opcodes_dict, registers_dict, line_number):
+# If 'offset' is not numeric, assume it's a label and compute the offset.
+def get_offset_from_label(offset, label_dict, line_number, pc):
+    if not is_int(offset):
+        if offset not in label_dict:
+            sys.exit(f"Error at line {line_number}: Undefined label '{offset}'")
+
+        return label_dict[offset] - pc
+    return int(offset)
+
+def get_R_type_binary(elements, instruction_data, registers_dict, line_number):
     
     # assigning and checking whether all the operands and opcode are present
     try:
@@ -149,13 +160,11 @@ def get_R_type_binary(elements, opcodes_dict, registers_dict, line_number):
     for reg in (rd, rs1, rs2):
         if reg not in registers_dict: 
             sys.exit(f"Error: Invalid register format '{reg}' at line {line_number}.")
-
-    instruction_data = opcodes_dict.get(instruction)
   
     return f'{instruction_data["funct7"]}{registers_dict.get(rs2)}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
 
 
-def get_I_type_binary(elements, opcodes_dict, registers_dict, line_number):
+def get_I_type_binary(elements, instruction_data, registers_dict, line_number):
     
     # Trying to get all the elements in seperate variables and exiting if instruction does not have exactly 4 elements 
     try:
@@ -180,12 +189,11 @@ def get_I_type_binary(elements, opcodes_dict, registers_dict, line_number):
 
     # Getting the binary form of imm (in 2's complement)
     imm = f"{int(imm) & 0b111111111111:012b}"
-    instruction_data = opcodes_dict.get(instruction)
 
     return f'{imm}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
 
 
-def get_S_type_binary(elements, opcodes_dict, registers_dict, line_number):
+def get_S_type_binary(elements, instruction_data, registers_dict, line_number):
 
     # Ensure correct format
     try:
@@ -207,24 +215,63 @@ def get_S_type_binary(elements, opcodes_dict, registers_dict, line_number):
     if not (-2048 <= int(offset) <= 2047): 
         sys.exit(f"Error: Immediate value '{offset}' out of range (-2048 to 2047) at line {line_number}.")
 
-    instruction_data = opcodes_dict.get(instruction)
-
     # Getting offset value in 2's complement binary and splitting it into upper and lower
     imm_bin = f"{int(offset) & 0b111111111111:012b}"  
-    imm_upper = imm_bin[:7] 
-    imm_lower = imm_bin[7:]  
 
-    return f'{imm_upper}{registers_dict[rs2]}{registers_dict[rs1]}{instruction_data["funct3"]}{imm_lower}{instruction_data["opcode"]}'
+    return f'{imm_bin[:7] }{registers_dict[rs2]}{registers_dict[rs1]}{instruction_data["funct3"]}{imm_bin[7:]}{instruction_data["opcode"]}'
 
 
-def get_B_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
-    ...
+def get_B_type_binary(elements, instruction_data, registers_dict, line_number, label_dict, pc):
+    
+    try:
+        instruction, rs2, rs1, offset = elements
+        if is_int(rs1):
+            rs1, offset = offset, rs1
+    except ValueError:
+        sys.exit(f"Error at line {line_number}: B-type instruction must have exactly 4 elements: instruction, rs2, rs1, offset/label")
 
+    if rs1 not in registers_dict or rs2 not in registers_dict:
+        sys.exit(f"Error at line {line_number}: Invalid register format for '{rs1}' or '{rs2}'.")
 
-def get_J_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
-    ...
+    offset = get_offset_from_label(offset, label_dict, line_number, pc)
+    
+    if not (-4096 <= offset <= 4095):
+        sys.exit(f"Error at line {line_number}: Computed offset '{offset}' out of range for branch instruction.")
 
+    # Convert the offset to a 12-bit two's complement binary string.
+    imm_bin = f"{offset & 0xFFF:012b}"
 
+    return f"{imm_bin[0]}{imm_bin[1:7]}{registers_dict[rs2]}{registers_dict[rs1]}{instruction_data['funct3']}{imm_bin[7:11]}{imm_bin[11]}{instruction_data['opcode']}"
+
+ 
+def get_J_type_binary(elements, instruction_data, registers_dict, line_number, label_dict, pc):
+    
+    try:
+        instruction, rd, offset = elements
+    except ValueError:
+        sys.exit(f"Error at line {line_number}: J-type instruction must have exactly 3 elements: instruction, rd, offset/label")
+    
+    offset = get_offset_from_label(offset, label_dict, line_number, pc)
+    
+    if rd not in registers_dict:
+        sys.exit(f"Error at line {line_number}: Invalid destination register '{rd}'")
+    
+    
+    # JAL offsets must be a multiple of 2 for some reason -_- (frient told me TRUST)
+    if offset % 2 != 0:
+        sys.exit(f"Error at line {line_number}: J-type offset '{offset}' is not properly aligned (must be a multiple of 2)")
+    
+    # Computing the encoded offset by dividing by 2.
+    encoded_offset = offset // 2
+
+    if not (-524288 <= encoded_offset <= 524287):
+        sys.exit(f"Error at line {line_number}: J-type offset '{encoded_offset}' out of range (-524288 to 524287)")
+    
+    # Convert the encoded offset to a 20-bit two's complement binary string.
+    imm20_bin = f"{encoded_offset & 0xFFFFF:020b}"
+    
+    return f"{imm20_bin[0]}{imm20_bin[10:20]}{imm20_bin[9]}{imm20_bin[1:9]}{registers_dict[rd]}{instruction_data['opcode']}"
+    
 def get_special_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
     
     match elements[0]:
@@ -236,7 +283,7 @@ def get_special_type_binary(elements, opcodes_dict, registers_dict, line_number,
 
         case "rst":
             instruction_data = opcodes_dict.get(elements[0])
-            return f"00000000000000000{instruction_data["funct3"]}00000{instruction_data["opcode"]}"
+            return f"{instruction_data["funct7"]}0000000000{instruction_data["funct3"]}00000{instruction_data["opcode"]}"
 
         case "mult":
             instruction_data = opcodes_dict.get(elements[0])
