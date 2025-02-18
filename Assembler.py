@@ -233,10 +233,35 @@ def get_B_type_binary(elements, instruction_data, registers_dict, line_number, l
     if rs1 not in registers_dict or rs2 not in registers_dict:
         sys.exit(f"Error at line {line_number}: Invalid register format for '{rs1}' or '{rs2}'.")
 
+
     offset = get_offset_from_label(offset, label_dict, line_number, pc)
     
     if not (-4096 <= offset <= 4095):
         sys.exit(f"Error at line {line_number}: Computed offset '{offset}' out of range for branch instruction.")
+
+def get_J_type_binary(elements, opcodes_dict, registers_dict, line_number, label_dict):
+
+
+    try:
+        instruction, rd, offset = elements
+    except ValueError:
+        sys.exit(f"Error at line {line_number}: J-type instruction must have exactly 3 elements: instruction, rd, offset")
+    if rd not in registers_dict:
+        sys.exit(f"Error: Invalid register format '{rd}' at line {line_number}.")
+    try:
+        imm = int(offset)
+        if not (-2**20 <= imm <= 2**20 - 1): 
+            sys.exit(f"Error: Immediate value '{imm}' out of range (-2^20 to 2^20-1) at line {line_number}.")
+    except ValueError:
+        sys.exit(f"Error: Immediate value '{offset}' is not a valid number at line {line_number}.")
+    instruction_data = opcodes_dict.get(instruction)
+    imm_bin = f"{imm & 0xFFFFF:020b}"  # 20-bit immediate value
+    imm_20 = imm_bin[0]  # bit 20
+    imm_10_1 = imm_bin[1:11]  # bits 10-1
+    imm_11 = imm_bin[11]  # bit 11
+    imm_19_12 = imm_bin[12:20]  # bits 19-12
+    return f"{imm_20} {imm_19_12} {imm_11} {imm_10_1} {registers_dict[rd]} {instruction_data['opcode']}"
+
 
     # Convert the offset to a 12-bit two's complement binary string.
     imm_bin = f"{offset & 0xFFF:012b}"

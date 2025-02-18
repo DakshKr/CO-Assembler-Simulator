@@ -1,3 +1,4 @@
+<<<<<<< HEAD
     addi a1, a0, 5      # x1 = 5
     addi a2, a0, 10     # x2 = 10
     addi a3, a0, 5      # x3 = 5
@@ -21,3 +22,14 @@ LABEL3:
 
 END:
     nop                  # End of program
+=======
+addi sp,zero,256
+addi ra,zero,15
+addi sp,zero,10
+loop: beq ra,sp,end
+sub ra,ra,sp
+jal zero,loop
+end: sw ra,0(sp)
+jalr zero,ra,0
+beq zero,zero,0
+>>>>>>> 29b43bd (Developed get_ j_type_binary function)
