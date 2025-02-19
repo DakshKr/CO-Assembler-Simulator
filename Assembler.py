@@ -173,8 +173,8 @@ def get_I_type_binary(elements, instruction_data, registers_dict, line_number):
     # Trying to get all the elements in seperate variables and exiting if instruction does not have exactly 4 elements 
     try:
         instruction, rd, rs1, imm = elements
-        # if is_int(rs1):
-        #     rs1, imm = imm, rs1
+        if instruction == "lw":
+            rs1, imm = imm, rs1
 
     except ValueError:
         sys.exit("Error: I-type instruction must have exactly 4 elements: instruction, rd, rs1, imm")
@@ -201,7 +201,7 @@ def get_S_type_binary(elements, instruction_data, registers_dict, line_number):
 
     # Ensure correct format
     try:
-        instruction, rs2, rs1, offset = elements 
+        instruction, rs2, offset, rs1 = elements 
         # if is_int(rs1):
         #     rs1, offset = offset, rs1
 
