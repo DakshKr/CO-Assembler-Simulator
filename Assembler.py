@@ -313,5 +313,5 @@ def get_special_type_binary(elements, opcodes_dict, registers_dict, line_number,
             
             return f'{instruction_data["funct7"]}{registers_dict.get(rs1)}{registers_dict.get(rs1)}{instruction_data["funct3"]}{registers_dict.get(rd)}{instruction_data["opcode"]}'
 
-if __name__ == "__main__":
+if __name__ == "__main__" :
     main()
