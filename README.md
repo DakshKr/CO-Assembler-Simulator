@@ -3,7 +3,11 @@
 ---
 
 ### Description
-This project is a simple assembler for a subset of the RISC-V instruction set. It takes assembly code as input and translates it into corresponding machine code using predefined opcodes and register mappings. The assembler supports R, I, S, B, and J-type instructions and handles basic control flow operations like branching and jumping.
+This project is a simple assembler for a subset of the RISC-V instruction set. It takes assembly code as input and translates it into corresponding machine code using predefined opcodes and register mappings. The assembler supports R, I, S, B, J and special-type instructions and handles basic control flow operations like branching and jumping.
+
+---
+### Note
+Special Type instructions in the program are a custom instruction type that are made for instructions like halt, mult, rst and rvrs.
 
 ---
 
@@ -25,13 +29,13 @@ This project is a simple assembler for a subset of the RISC-V instruction set. I
 ##### Installation
 1. Clone the Repository:
    Use the following command to clone the project repository:
-   [> git clone https://github.com/yourusername/your-assembler-project.git](https://)
+   [> git clone https://github.com/DakshKr/CO-Assembler-Simulator.git](https://)
 
 2. Navigate to Project Directory:
 ```python
-   > cd your-assembler-project
+   > cd assembler
 ```
-3. Ensure all files are present
+1. Ensure all files are present
    The project should include:
    * Assembler.py - The main assembler script
    * opcodes.json - Contains the mapping for instruction opcodes
@@ -42,11 +46,12 @@ This project is a simple assembler for a subset of the RISC-V instruction set. I
 ### Running the Assembler
 To assemble an input file containing assembly code, run:
 ```python
-> python Assembler.py inp.txt
+> python Assembler.py inp.txt out.txt
 ```
-Here inp.txt is a text file with your assembly instructions.
+* Here inp.txt is a text file path for your input assembly file.
+* Here out.txt is a text file path for your output binary file.
 
-When you run the assembler with the above file, it will convert each instruction into the corresponding machine code based on the opcode and register mappings provided in **opcodes.json** and the register mapping file.
+When you run the assembler with the above file, it will convert each instruction into the corresponding machine code based on the opcode and register mappings provided in **opcodes.json** and the **registers.json**.
 
 ---
 
@@ -55,7 +60,7 @@ When you run the assembler with the above file, it will convert each instruction
 The main Python script that reads and processes assembly code. It handles parsing instructions, resolving labels, and converting assembly instructions into machine code using the provided opcode and register mappings.
 
 * **opcodes.json:**
-A JSON file that contains the mapping of assembly instructions to their corresponding binary opcodes, funct3, and funct7 codes. It supports various instruction types (R, I, S, B, and J), with placeholders for instructions like "mul", "rst", and "halt" for future enhancements.
+A JSON file that contains the mapping of assembly instructions to their corresponding binary opcodes, funct3, and funct7 codes. It supports various instruction types (R, I, S, B, J and special), with placeholders for instructions like "mul", "rst", and "halt" for future enhancements.
 
 * **Register Mapping File:**
 A JSON-based file (or code snippet) that maps register names (e.g., "a0", "a1", "x0", etc.) to their respective binary codes. This file is crucial for translating human-readable register names into binary representations required by the machine code.
@@ -78,6 +83,3 @@ Enhance error reporting to provide more detailed feedback when assembly code con
 
 * **Optimization:**
 Explore optimization techniques to speed up the assembly process, especially for larger codebases.
-
-* **User Interface:**
-Consider developing a graphical user interface (GUI) to make the tool more accessible to beginners and those who prefer a visual approach to learning assembly language.
