@@ -2,6 +2,7 @@
 import sys
 import re
 import json
+import cowsay
 
 # main
 def main():
@@ -22,7 +23,7 @@ def main():
             file.write(binary_line)
             file.write("\n")
 
-    print("SUCCESS")
+    cowsay.cow('Success')
 
 
 # fn to check whether the user gave valid CLIs
