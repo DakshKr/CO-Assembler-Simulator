@@ -25,7 +25,11 @@ Special Type instructions in the program are a custom instruction type that are 
 ##### Prerequisites
 * Python 3.6 or higher
 * Git (optional, for repository cloning)
-
+* Have cowsay installed on your system via
+```python
+   > pip install cowsay
+```
+  
 ##### Installation
 1. Clone the Repository:
    Use the following command to clone the project repository:
