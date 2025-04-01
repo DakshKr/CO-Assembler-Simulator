@@ -22,10 +22,10 @@ def main():
         binary_line = program[pc // 4]
         opcode = binary_line[-7:]
 
-        output.append(get_log(pc, register_arr))
-
         if binary_line == "00000000000000000000000001100011": # HALT
+            output.append(get_log(pc, register_arr))
             break
+
         match opcode:
             # R-Type instructions
             case "0110011":
@@ -128,33 +128,57 @@ def main():
                 register_arr[0] = 0
                 pc += imm
 
-            # I-Type instructions (immediate ALU operations)
-            case _:
+            # I-Type instructions: addi
+            case "0010011":
+                rd = int(binary_line[20:25], 2)
+                rs1 = int(binary_line[12:17], 2)
+                func3 = binary_line[17:20]
+
+                if func3 != "000":
+                    sys.exit(f"Unknown I-Type Instruction at line {pc//4}")
+
+                imm = get_int(binary_line[:12])
+                print(rd, rs1, imm)
+                if rd != 0:
+                    register_arr[rd] = register_arr[rs1] + imm
+                register_arr[0] = 0
+                pc += 4
+
+            # I-Type instruction: lw 
+            case "0000011":
                 rd = int(binary_line[20:25], 2)
                 rs1 = int(binary_line[12:17], 2)
                 imm = sign_extend(binary_line[:12], 12)
-                func3 = binary_line[17:20]
-                if rd != 0:
-                    match func3:
-                        case "000":
-                            register_arr[rd] = register_arr[rs1] + imm
-                        case "010":
-                            register_arr[rd] = 1 if register_arr[rs1] < imm else 0
-                        case "100":
-                            register_arr[rd] = register_arr[rs1] ^ imm
-                        case "110":
-                            register_arr[rd] = register_arr[rs1] | imm
-                        case "111":
-                            register_arr[rd] = register_arr[rs1] & imm
-                        case "001":
-                            register_arr[rd] = register_arr[rs1] << (imm & 0b11111)
-                        case "101":
-                            # For I-Type shift right, assume logical shift here.
-                            register_arr[rd] = (register_arr[rs1] & 0xFFFFFFFF) >> (imm & 0b11111)
-                        case _:
-                            sys.exit(f"Unknown I-Type Instruction at line {pc // 4}")
+                address = register_arr[rs1] + imm
+
+                if address % 4 != 0 or address < 0 or (address // 4) >= len(memory):
+                    sys.exit(f"Invalid memory access at line {pc//4}")
+
+                register_arr[rd] = memory[address // 4]
                 register_arr[0] = 0
                 pc += 4
+
+            # I-Type instruction: jalr
+            case "1100111":
+                rd = int(binary_line[20:25], 2)
+                rs1 = int(binary_line[12:17], 2)
+                func3 = binary_line[17:20]
+
+                if func3 != "000":
+                    sys.exit(f"Unknown I-Type Instruction at line {pc//4}")
+                    
+                imm = sign_extend(binary_line[:12], 12)
+                return_address = pc + 4
+
+                # Set pc to (rs1 + imm) with LSB forced to 0.
+                pc = (register_arr[rs1] + imm) & ~1  # very cool bit manuplation trick fr
+                if rd != 0:
+                    register_arr[rd] = return_address
+                register_arr[0] = 0
+                register_arr[0] = 0
+                pc += 4
+  
+        output.append(get_log(pc, register_arr))
 
 
     addresses = [
@@ -203,9 +227,11 @@ def get_log(pc, r_list):
 
 def sign_extend(value, bits):
     if value[0] == "1":
-        return int(value, 2) - (1 << bits)
-    else:
-        return int(value, 2)
+        return int(value, 2) - (1 << bits)    
+    return int(value, 2)
+
+def get_int(binary):
+    return int(binary, 2)
 
 if __name__ == "__main__":
     main()
