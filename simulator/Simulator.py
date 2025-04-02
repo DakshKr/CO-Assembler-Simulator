@@ -10,8 +10,19 @@ def main():
         program = [l.strip() for l in file if l.strip()]
 
     register_arr = np.zeros(32, dtype=int)
-    memory = np.zeros(32, dtype=int)
     output = []  # List for logging register state
+    register_arr[2] = 380
+    memory = {
+    "0x00010000": 0, "0x00010004": 0, "0x00010008": 0, "0x0001000C": 0,
+    "0x00010010": 0, "0x00010014": 0, "0x00010018": 0, "0x0001001C": 0,
+    "0x00010020": 0, "0x00010024": 0, "0x00010028": 0, "0x0001002C": 0,
+    "0x00010030": 0, "0x00010034": 0, "0x00010038": 0, "0x0001003C": 0,
+    "0x00010040": 0, "0x00010044": 0, "0x00010048": 0, "0x0001004C": 0,
+    "0x00010050": 0, "0x00010054": 0, "0x00010058": 0, "0x0001005C": 0,
+    "0x00010060": 0, "0x00010064": 0, "0x00010068": 0, "0x0001006C": 0,
+    "0x00010070": 0, "0x00010074": 0, "0x00010078": 0, "0x0001007C": 0
+    }
+
 
     pc = 0
 
@@ -114,9 +125,9 @@ def main():
                 rs1 = int(binary_line[12:17], 2)
                 rs2 = int(binary_line[7:12], 2)
                 address = register_arr[rs1] + imm
-                if address % 4 != 0 or address < 0 or (address // 4) >= len(memory):
+                if address % 4 != 0 or address < 0:
                     sys.exit(f"Invalid Address at line {pc // 4}")
-                memory[address // 4] = register_arr[rs2]
+                memory[decimal_to_hex(address)] = register_arr[rs2]
                 pc += 4
 
             # J-Type instructions (jump and link)
@@ -151,10 +162,10 @@ def main():
                 imm = sign_extend(binary_line[:12], 12)
                 address = register_arr[rs1] + imm
 
-                if address % 4 != 0 or address < 0 or (address // 4) >= len(memory):
+                if address % 4 != 0 or address < 0:
                     sys.exit(f"Invalid memory access at line {pc//4}")
 
-                register_arr[rd] = memory[address // 4]
+                register_arr[rd] = memory[decimal_to_hex(address)]
                 register_arr[0] = 0
                 pc += 4
 
@@ -181,23 +192,12 @@ def main():
         output.append(get_log(pc, register_arr))
 
 
-    addresses = [
-    "0x00010000", "0x00010004", "0x00010008", "0x0001000C",
-    "0x00010010", "0x00010014", "0x00010018", "0x0001001C",
-    "0x00010020", "0x00010024", "0x00010028", "0x0001002C",
-    "0x00010030", "0x00010034", "0x00010038", "0x0001003C",
-    "0x00010040", "0x00010044", "0x00010048", "0x0001004C",
-    "0x00010050", "0x00010054", "0x00010058", "0x0001005C",
-    "0x00010060", "0x00010064", "0x00010068", "0x0001006C",
-    "0x00010070", "0x00010074", "0x00010078", "0x0001007C"
-]
-
     # Write logs and memory contents to the output file
     with open(sys.argv[2], "w") as f:
         for log in output:
             f.write(log + "\n")
-        for i in range(len(memory)):
-            f.write( addresses[i]+":" + i_to_b(str(memory[i])) + "\n")
+        # for i in range(len(memory)):
+        #     f.write( addresses[i]+":" + i_to_b(str(memory[i])) + "\n")
 
     print("success")
 
@@ -232,6 +232,20 @@ def sign_extend(value, bits):
 
 def get_int(binary):
     return int(binary, 2)
+
+def decimal_to_hex(n):
+    if n == 0:
+        return "0x0"
+
+    hex_chars = "0123456789ABCDEF"
+    hex_str = ""
+
+    while n > 0:
+        remainder = n % 16  # Get the remainder when divided by 16
+        hex_str = hex_chars[remainder] + hex_str  # Convert and prepend
+        n //= 16  # Integer division by 16
+
+    return "0x000" + hex_str
 
 if __name__ == "__main__":
     main()

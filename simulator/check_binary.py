@@ -12,18 +12,30 @@ def main():
         print("Error reading files:", e)
         return
 
-    match_found = False
-    # Compare line by line up to the smaller file's length
+    mismatch_found = False
     min_lines = min(len(lines1), len(lines2))
-    print("Matching lines:")
-    for i in range(min_lines):
-        # Strip newline and extra whitespace for an accurate comparison
-        if lines1[i].strip() == lines2[i].strip():
-            print(f"Line {i+1}: {lines1[i].rstrip()}")
-            match_found = True
 
-    if not match_found:
-        print("No matching lines found.")
+    print("Mismatched lines:")
+    for i in range(min_lines):
+        if lines1[i].strip() != lines2[i].strip():
+            print(f"Line {i+1}:")
+            print(f"  File1: {lines1[i].rstrip()}")
+            print(f"  File2: {lines2[i].rstrip()}")
+            mismatch_found = True
+
+    # Check if one file has extra lines
+    if len(lines1) != len(lines2):
+        mismatch_found = True
+        print("\nExtra lines in one of the files:")
+        if len(lines1) > min_lines:
+            for i in range(min_lines, len(lines1)):
+                print(f"  File1 Line {i+1}: {lines1[i].rstrip()}")
+        else:
+            for i in range(min_lines, len(lines2)):
+                print(f"  File2 Line {i+1}: {lines2[i].rstrip()}")
+
+    if not mismatch_found:
+        print("All lines match.")
 
 if __name__ == '__main__':
     main()
