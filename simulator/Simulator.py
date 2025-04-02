@@ -122,14 +122,14 @@ def main():
 
             # S-Type instructions (stores)
             case "0100011":
-                print(binary_line)
+                
                 imm = sign_extend(binary_line[:7] + binary_line[20:25], 12)
                 rs1 = int(binary_line[12:17], 2)
                 rs2 = int(binary_line[7:12], 2)
                 address = register_arr[rs1] + imm
                 if address % 4 != 0 or address < 0:
                     sys.exit(f"Invalid Address at line {pc // 4}")
-                print(decimal_to_hex(address), address)
+                
                 memory[decimal_to_hex(address)] = register_arr[rs2]
                 pc += 4
 
@@ -137,7 +137,7 @@ def main():
             case "1101111":
                 rd = int(binary_line[20:25], 2)
                 imm = sign_extend(binary_line[0] + binary_line[12:20] + binary_line[11] + binary_line[1:11] + "0", 21)
-                print(pc)
+    
                 if rd != 0:
                     register_arr[rd] = (pc + 4)
                 register_arr[0] = 0
