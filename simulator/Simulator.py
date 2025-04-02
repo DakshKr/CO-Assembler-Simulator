@@ -122,15 +122,15 @@ def main():
 
             # S-Type instructions (stores)
             case "0100011":
+                print(binary_line)
                 imm = sign_extend(binary_line[:7] + binary_line[20:25], 12)
                 rs1 = int(binary_line[12:17], 2)
                 rs2 = int(binary_line[7:12], 2)
                 address = register_arr[rs1] + imm
                 if address % 4 != 0 or address < 0:
                     sys.exit(f"Invalid Address at line {pc // 4}")
-                
+                print(decimal_to_hex(address), address)
                 memory[decimal_to_hex(address)] = register_arr[rs2]
-                print( address, decimal_to_hex(address), rs2, register_arr[rs2])
                 pc += 4
 
             # J-Type instructions (jump and link)
@@ -180,30 +180,31 @@ def main():
 
                 if func3 != "000":
                     sys.exit(f"Unknown I-Type Instruction at line {pc//4}")
-                    
+                                
                 imm = sign_extend(binary_line[:12], 12)
                 return_address = pc + 4
 
-                # Set pc to (rs1 + imm) with LSB forced to 0.
-                pc = (register_arr[rs1] + imm) & ~1  # very cool bit manuplation trick fr
+                # Set PC to (register_arr[rs1] + imm) with LSB forced to 0.
+                pc = (register_arr[rs1] + imm) & ~1
                 if rd != 0:
                     register_arr[rd] = return_address
+
+                # Enforce that x0 is always 0.
                 register_arr[0] = 0
-                register_arr[0] = 0
-                pc += 4
-  
+
+            
         output.append(get_log(pc, register_arr))
 
-
+        # print(pc, register_arr)
     # Write logs and memory contents to the output file
     with open(sys.argv[2], "w") as f:
         for log in output:
             f.write(log + "\n")
         # for i in range(len(memory)):
         #     f.write( addresses[i]+":" + i_to_b(str(memory[i])) + "\n")
-        
-        for address in memory:
-            f.write(address + ":" + i_to_b(memory[address]) + "\n")
+        m = list(memory.keys())[:32]
+        for address in m:
+            f.write(f"{address}:{i_to_b(memory[address])}\n")
     
     print("success")
 
