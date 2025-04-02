@@ -27,6 +27,7 @@ def main():
     pc = 0
 
     while True:
+        # print(pc//4 + 1,"\n",memory,"\n\n")
         if pc // 4 >= len(program):
             sys.exit("\nError: program counter out-of-bounds\n")
 
@@ -127,15 +128,18 @@ def main():
                 address = register_arr[rs1] + imm
                 if address % 4 != 0 or address < 0:
                     sys.exit(f"Invalid Address at line {pc // 4}")
+                
                 memory[decimal_to_hex(address)] = register_arr[rs2]
+                print( address, decimal_to_hex(address), rs2, register_arr[rs2])
                 pc += 4
 
             # J-Type instructions (jump and link)
             case "1101111":
                 rd = int(binary_line[20:25], 2)
                 imm = sign_extend(binary_line[0] + binary_line[12:20] + binary_line[11] + binary_line[1:11] + "0", 21)
+                print(pc)
                 if rd != 0:
-                    register_arr[rd] = pc + 4
+                    register_arr[rd] = (pc + 4)
                 register_arr[0] = 0
                 pc += imm
 
@@ -148,8 +152,7 @@ def main():
                 if func3 != "000":
                     sys.exit(f"Unknown I-Type Instruction at line {pc//4}")
 
-                imm = get_int(binary_line[:12])
-                print(rd, rs1, imm)
+                imm = get_signed_int(binary_line[:12])
                 if rd != 0:
                     register_arr[rd] = register_arr[rs1] + imm
                 register_arr[0] = 0
@@ -198,7 +201,10 @@ def main():
             f.write(log + "\n")
         # for i in range(len(memory)):
         #     f.write( addresses[i]+":" + i_to_b(str(memory[i])) + "\n")
-
+        
+        for address in memory:
+            f.write(address + ":" + i_to_b(memory[address]) + "\n")
+    
     print("success")
 
 def check_input():
@@ -230,22 +236,17 @@ def sign_extend(value, bits):
         return int(value, 2) - (1 << bits)    
     return int(value, 2)
 
-def get_int(binary):
-    return int(binary, 2)
+def decimal_to_hex(decimal):
+    return f"0x{decimal & 0xFFFFFFFF:08X}"
 
-def decimal_to_hex(n):
-    if n == 0:
-        return "0x0"
-
-    hex_chars = "0123456789ABCDEF"
-    hex_str = ""
-
-    while n > 0:
-        remainder = n % 16  # Get the remainder when divided by 16
-        hex_str = hex_chars[remainder] + hex_str  # Convert and prepend
-        n //= 16  # Integer division by 16
-
-    return "0x000" + hex_str
+def get_signed_int(str1: str) -> int:
+    if str1[0] == "0":
+        return int(str1, 2)
+    else:
+        str2 = ''
+        for i in str1:
+            str2+="1" if i == "0" else "0"
+        return -1 * (int(str2, 2) + 1)
 
 if __name__ == "__main__":
     main()
