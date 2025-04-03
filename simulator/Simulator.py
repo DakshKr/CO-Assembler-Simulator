@@ -55,7 +55,7 @@ def main():
                             elif func7 == "0000000":
                                 register_arr[rd] = register_arr[rs1] + register_arr[rs2]
                             else:
-                                sys.exit(f"Unknown R-Type Instruction at line {pc // 4}")
+                                sys.exit(f"Unknown R-Type Instruction at line {pc // 4 + 1}")
                         case "010":
                             register_arr[rd] = 1 if register_arr[rs1] < register_arr[rs2] else 0
                         case "100":
@@ -71,13 +71,13 @@ def main():
                                 # Logical right shift (SRL): mask to 32 bits first
                                 register_arr[rd] = (register_arr[rs1] & 0xFFFFFFFF) >> shift_amount
                             else:
-                                sys.exit(f"Unknown R-Type Instruction at line {pc // 4}")
+                                sys.exit(f"Unknown R-Type Instruction at line {pc // 4 + 1}")
                         case "110":
                             register_arr[rd] = register_arr[rs1] | register_arr[rs2]
                         case "111":
                             register_arr[rd] = register_arr[rs1] & register_arr[rs2]
                         case _:
-                            sys.exit(f"Unknown R-Type Instruction at line {pc // 4}")
+                            sys.exit(f"Unknown R-Type Instruction at line {pc // 4 + 1}")
 
                     # Ensure x0 remains 0
                     register_arr[0] = 0
@@ -99,7 +99,7 @@ def main():
                     case "101":
                         pc += imm if register_arr[rs1] >= register_arr[rs2] else 4
                     case _:
-                        sys.exit(f"Unknown B-Type Instruction at line {pc // 4}")
+                        sys.exit(f"Unknown B-Type Instruction at line {pc // 4 + 1}")
 
             # Special-Type instructions (e.g., multiplication)
             case "1111111":
@@ -114,7 +114,7 @@ def main():
                 if func3 == "100":
                     register_arr[rd] = register_arr[rs1] * register_arr[rs2]
                 else:
-                    sys.exit(f"Unknown Special-Type Instruction at line {pc // 4}")
+                    sys.exit(f"Unknown Special-Type Instruction at line {pc // 4 + 1}")
 
                 # Ensure x0 remains 0 and increment pc
                 register_arr[0] = 0
@@ -128,7 +128,7 @@ def main():
                 rs2 = int(binary_line[7:12], 2)
                 address = register_arr[rs1] + imm
                 if address % 4 != 0 or address < 0:
-                    sys.exit(f"Invalid Address at line {pc // 4}")
+                    sys.exit(f"Invalid Address at line {pc // 4 + 1}")
                 
                 memory[decimal_to_hex(address)] = register_arr[rs2]
                 pc += 4
@@ -150,7 +150,7 @@ def main():
                 func3 = binary_line[17:20]
 
                 if func3 != "000":
-                    sys.exit(f"Unknown I-Type Instruction at line {pc//4}")
+                    sys.exit(f"Unknown I-Type Instruction at line {pc // 4 + 1}")
 
                 imm = get_signed_int(binary_line[:12])
                 if rd != 0:
@@ -166,7 +166,7 @@ def main():
                 address = register_arr[rs1] + imm
 
                 if address % 4 != 0 or address < 0:
-                    sys.exit(f"Invalid memory access at line {pc//4}")
+                    sys.exit(f"Invalid memory access at line {pc // 4 + 1}")
 
                 register_arr[rd] = memory[decimal_to_hex(address)]
                 register_arr[0] = 0
@@ -179,7 +179,7 @@ def main():
                 func3 = binary_line[17:20]
 
                 if func3 != "000":
-                    sys.exit(f"Unknown I-Type Instruction at line {pc//4}")
+                    sys.exit(f"Unknown I-Type Instruction at line {pc // 4 + 1}")
                                 
                 imm = sign_extend(binary_line[:12], 12)
                 return_address = pc + 4
