@@ -1,6 +1,7 @@
 import sys
 import re
 import numpy as np
+import cowsay
 
 def main():
     check_input()
@@ -113,6 +114,8 @@ def main():
 
                 if func3 == "100":
                     register_arr[rd] = register_arr[rs1] * register_arr[rs2]
+                elif func3 == "010":
+                    register_arr = np.zeros(32, dtype=int)
                 else:
                     sys.exit(f"Unknown Special-Type Instruction at line {pc // 4 + 1}")
 
@@ -206,7 +209,7 @@ def main():
         for address in m:
             f.write(f"{address}:{i_to_b(memory[address])}\n")
     
-    print("success")
+    cowsay.cow('Success')
 
 def check_input():
     if len(sys.argv) != 3:
