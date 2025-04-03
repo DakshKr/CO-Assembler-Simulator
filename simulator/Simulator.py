@@ -211,6 +211,7 @@ def main():
     
     cowsay.cow('Success')
 
+
 def check_input():
     if len(sys.argv) != 3:
         sys.exit("\nMissing/Exceeding the number of Command Line Arguments\n\n")
@@ -226,8 +227,10 @@ def check_input():
     if sys.argv[1] == sys.argv[2]:
         sys.exit("\nInput & Output File Can't be same\n\n")
 
+
 def i_to_b(integer):
     return f"0b{int(integer) & 0xFFFFFFFF:032b}"
+
 
 def get_log(pc, r_list):
     transe = i_to_b(pc)
@@ -235,13 +238,16 @@ def get_log(pc, r_list):
         transe += f" {i_to_b(reg)}"
     return transe
 
+
 def sign_extend(value, bits):
     if value[0] == "1":
         return int(value, 2) - (1 << bits)    
     return int(value, 2)
 
+
 def decimal_to_hex(decimal):
     return f"0x{decimal & 0xFFFFFFFF:08X}"
+
 
 def get_signed_int(str1: str) -> int:
     if str1[0] == "0":
@@ -251,6 +257,7 @@ def get_signed_int(str1: str) -> int:
         for i in str1:
             str2+="1" if i == "0" else "0"
         return -1 * (int(str2, 2) + 1)
+
 
 if __name__ == "__main__":
     main()
